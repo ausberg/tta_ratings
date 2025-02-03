@@ -14,7 +14,7 @@ function calculateRowsPerPage() {
     const rowHeight = 30; // Approximate row height in pixels
     const availableHeight = windowHeight - headerHeight;
 
-    return Math.max(10, Math.floor(availableHeight / rowHeight)); // Ensure at least 10 rows
+    return Math.max(10, Math.floor(availableHeight / rowHeight) - 4);
 }
 
 async function loadCSV(filename = "ratings_overall.csv") {
@@ -333,7 +333,8 @@ function updatePagination(page) {
         if (nextButton) {
             nextButton.insertAdjacentElement("afterend", existingDropdown);
         } else {
-            console.warn("Next button not found! Inserting dropdown at end of pagination.");
+            // by default this currently seems to never find the button and
+            // adds the dropdown to the end of the pagination
             document.querySelector(".pagination").appendChild(existingDropdown);
         }
     }
