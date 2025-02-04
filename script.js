@@ -45,10 +45,6 @@ async function loadCSV(filename = "ratings_overall.csv") {
 
         // Display the first page of data
         displayPage(1);
-        
-        // Enable sorting and filtering functionality
-        addSorting();
-        setupFilterButtons();
 
         // Reset the search input field
         document.getElementById("search").value = "";
@@ -63,11 +59,16 @@ async function loadCSV(filename = "ratings_overall.csv") {
         document.getElementById("ratings-title").textContent = `ruby_buby's Mid-Season Ratings (${titleMap[filename].replace(" Ratings", "")})`;
 
         // Update the export button to download the currently selected file
-        document.getElementById("export-btn").setAttribute("onclick", `exportCSV('${filename}')`);
+        document.getElementById("export-btn").setAttribute("data-filename", filename);
     
     } catch (error) {
         console.error("Error loading CSV:", error);
     }
+
+    // Enable sorting and filtering functionality
+    addSorting();
+    setupFilterButtons();
+
 }
 
 async function fetchLastCommitDate() {
@@ -92,23 +93,29 @@ async function fetchLastCommitDate() {
 fetchLastCommitDate();
 
 function addSorting() {
-    // Select all table header elements and add a click event listener to each
+    // Remove existing event listeners to prevent duplication
+    document.querySelectorAll("th").forEach(th => {
+        let newTh = th.cloneNode(true);
+        th.parentNode.replaceChild(newTh, th);
+    });
+
+    // Select all table headers and add a click event listener to each
     document.querySelectorAll("th").forEach((th, index) => {
-    th.addEventListener("click", function (event) {
-        // Ignore clicks on filter buttons
-        if (event.target.classList.contains("filter-btn")) return;
+        th.addEventListener("click", function (event) {
+            // Ignore clicks on filter buttons
+            if (event.target.classList.contains("filter-btn")) return;
 
-        // Toggle sort direction for the clicked column
-        sortDirection[index] = sortDirection[index] ? -sortDirection[index] : 1;
+            // Toggle sort direction for the clicked column
+            sortDirection[index] = sortDirection[index] ? -sortDirection[index] : 1;
 
-        // Determine the data to sort (filtered rows if any, otherwise all rows)
-        let dataToSort = filteredRows.length > 0 ? filteredRows : allRows;
+            // Determine the data to sort (filtered rows if any, otherwise all rows)
+            let dataToSort = filteredRows.length > 0 ? filteredRows : allRows;
 
-        // Sort the data based on the clicked column and sort direction
-        dataToSort.sort((a, b) => sortDirection[index] * a[index].localeCompare(b[index], undefined, { numeric: true }));
+            // Sort the data based on the clicked column and sort direction
+            dataToSort.sort((a, b) => sortDirection[index] * a[index].localeCompare(b[index], undefined, { numeric: true }));
 
-        // Display the first page of the sorted data
-        displayPage(1);
+            // Display the first page of the sorted data
+            displayPage(1);
         });
     });
 }
@@ -274,6 +281,13 @@ function formatColumn(value, index) {
     return `<td>${value}</td>`;
 }
 
+// Function to update rows per page dynamically
+function updateRowsPerPage() {
+    let selectedValue = document.getElementById("rowsPerPageSelect").value;
+    rowsPerPage = selectedValue === "auto" ? calculateRowsPerPage() : parseInt(selectedValue, 10);
+    displayPage(1); // Reload table with new row count
+}
+
 function jumpToPage() {
     const totalPages = Math.ceil(allRows.length / rowsPerPage); // Get total pages
     let pageInput = document.getElementById("pageJumpInput").value.trim();
@@ -289,8 +303,18 @@ function jumpToPage() {
 
 // Updates the pagination controls based on the current page
 function updatePagination(page) {
-    const totalPages = Math.ceil(allRows.length / rowsPerPage); // Calculate total pages
-    let paginationHtml = `<button onclick="displayPage(${page - 1})" ${page === 1 ? 'disabled' : ''}>Previous</button>`;
+    const totalPages = Math.ceil(allRows.length / rowsPerPage);
+    let paginationDiv = document.querySelector(".pagination");
+    
+    // Clear existing pagination content
+    paginationDiv.innerHTML = "";  
+
+    // Create Previous button
+    let prevBtn = document.createElement("button");
+    prevBtn.textContent = "Previous";
+    prevBtn.disabled = page === 1;
+    prevBtn.addEventListener("click", () => displayPage(page - 1));
+    paginationDiv.appendChild(prevBtn);
 
     // Determine the range of page numbers to display
     let startPage = Math.max(1, page - 3);
@@ -298,50 +322,95 @@ function updatePagination(page) {
 
     // Show first page button if not already shown
     if (startPage > 1) {
-        paginationHtml += `<button onclick="displayPage(1)">1</button>`;
-        if (startPage > 2) paginationHtml += `<span>...</span>`; // Ellipsis for skipped pages
+        let firstPageBtn = document.createElement("button");
+        firstPageBtn.textContent = "1";
+        firstPageBtn.addEventListener("click", () => displayPage(1));
+        paginationDiv.appendChild(firstPageBtn);
+
+        if (startPage > 2) {
+            let ellipsis = document.createElement("span");
+            ellipsis.textContent = "...";
+            paginationDiv.appendChild(ellipsis);
+        }
     }
 
     // Generate page buttons dynamically
     for (let i = startPage; i <= endPage; i++) {
-        paginationHtml += `<button onclick="displayPage(${i})" ${i === page ? 'style="font-weight: bold;"' : ''}>${i}</button>`;
+        let pageBtn = document.createElement("button");
+        pageBtn.textContent = i;
+        if (i === page) {
+            pageBtn.style.fontWeight = "bold";
+        }
+        pageBtn.addEventListener("click", () => displayPage(i));
+        paginationDiv.appendChild(pageBtn);
     }
 
     // Show last page button if not already shown
     if (endPage < totalPages) {
-        if (endPage < totalPages - 1) paginationHtml += `<span>...</span>`; // Ellipsis for skipped pages
-        paginationHtml += `<button onclick="displayPage(${totalPages})">${totalPages}</button>`;
+        if (endPage < totalPages - 1) {
+            let ellipsis = document.createElement("span");
+            ellipsis.textContent = "...";
+            paginationDiv.appendChild(ellipsis);
+        }
+
+        let lastPageBtn = document.createElement("button");
+        lastPageBtn.textContent = totalPages;
+        lastPageBtn.addEventListener("click", () => displayPage(totalPages));
+        paginationDiv.appendChild(lastPageBtn);
     }
 
-    // Add the Jump-to-Page input and "Go" button
-    paginationHtml += `
-        <input type="number" id="pageJumpInput" value="${page}" min="1" max="${totalPages}" style="width: 50px; text-align: center;">
-        <button onclick="jumpToPage()">Go</button>
-    `;
+    // Add the Jump-to-Page input
+    let pageInput = document.createElement("input");
+    pageInput.type = "number";
+    pageInput.id = "pageJumpInput";
+    pageInput.value = page;
+    pageInput.min = "1";
+    pageInput.max = totalPages;
+    pageInput.style.width = "50px";
+    pageInput.style.textAlign = "center";
+    paginationDiv.appendChild(pageInput);
 
-    // Next button
-    paginationHtml += `<button onclick="displayPage(${page + 1})" ${page === totalPages ? 'disabled' : ''}>Next</button>`;
+    // Add the "Go" button
+    let goBtn = document.createElement("button");
+    goBtn.textContent = "Go";
+    goBtn.addEventListener("click", jumpToPage);
+    paginationDiv.appendChild(goBtn);
 
-    // Update the pagination UI
-    let paginationDiv = document.querySelector(".pagination");
-    let existingDropdown = document.querySelector(".rows-per-page-container");
-    paginationDiv.innerHTML = paginationHtml;
+    // Create Next button
+    let nextBtn = document.createElement("button");
+    nextBtn.id = "nextPageBtn";
+    nextBtn.textContent = "Next";
+    nextBtn.disabled = page === totalPages;
+    nextBtn.addEventListener("click", () => displayPage(page + 1));
+    paginationDiv.appendChild(nextBtn);
 
-    // Re-add the dropdown if it was removed
-    if (existingDropdown && !document.getElementById("rowsPerPageSelect")) {
-        let nextButton = document.getElementById("nextPageBtn");
-        if (nextButton) {
-            nextButton.insertAdjacentElement("afterend", existingDropdown);
-        } else {
-            // by default this currently seems to never find the button and
-            // adds the dropdown to the end of the pagination
-            document.querySelector(".pagination").appendChild(existingDropdown);
-        }
+    // Ensure rows-per-page dropdown exists and is inserted
+    if (!document.getElementById("rowsPerPageSelect")) {
+        let rowsPerPageContainer = document.createElement("div");
+        rowsPerPageContainer.classList.add("rows-per-page-container");
+        rowsPerPageContainer.innerHTML = `
+            <label for="rowsPerPageSelect">Rows per page:</label>
+            <select id="rowsPerPageSelect">
+                <option value="auto">Auto</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="75">75</option>
+                <option value="100">100</option>
+            </select>
+        `;
+
+        paginationDiv.appendChild(rowsPerPageContainer);
+
+        // Attach event listener AFTER element is created
+        document.getElementById("rowsPerPageSelect").addEventListener("change", updateRowsPerPage);
     }
 }
 
 // Exports the selected CSV file for download
-function exportCSV(filename) {
+function exportCSV() {
+    const exportBtn = document.getElementById("export-btn");
+    const filename = exportBtn.getAttribute("data-filename") || "ratings_overall.csv"; // Default if missing
+
     let csvURL = `https://raw.githubusercontent.com/ausberg/tta_ratings/main/ratings/${filename}`;
 
     // Fetch the CSV file from the given URL
@@ -351,12 +420,32 @@ function exportCSV(filename) {
             // Create a temporary link element to trigger the file download
             let link = document.createElement("a");
             link.href = window.URL.createObjectURL(blob);
-            link.download = filename; // Set the filename for download
+            link.download = filename; // Use the detected filename
             document.body.appendChild(link);
             link.click(); // Simulate a click to start download
             document.body.removeChild(link); // Remove the link after download
         })
         .catch(error => console.error("Error downloading CSV:", error)); // Handle errors
+}
+
+function exportAllCSV() {
+    const filenames = ["ratings_overall.csv", "ratings_2p.csv", "ratings_3p.csv", "ratings_4p.csv"];
+
+    filenames.forEach(filename => {
+        let csvURL = `https://raw.githubusercontent.com/ausberg/tta_ratings/main/ratings/${filename}`;
+
+        fetch(csvURL)
+            .then(response => response.blob()) // Convert response to Blob
+            .then(blob => {
+                let link = document.createElement("a");
+                link.href = window.URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click(); // Trigger download
+                document.body.removeChild(link);
+            })
+            .catch(error => console.error(`Error downloading ${filename}:`, error));
+    });
 }
 
 // Searches the table for rows that match the input query
@@ -389,35 +478,51 @@ function searchTable() {
     displayPage(pageNumber);
 }
 
+// Attach event listeners when DOM is fully loaded
+document.addEventListener("DOMContentLoaded", function () {
+    function safeAddListener(id, event, handler) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener(event, handler);
+        }
+    }
+
+    // Attach event listeners for rating buttons
+    safeAddListener("overallRatingsBtn", "click", () => loadCSV("ratings_overall.csv"));
+    safeAddListener("ratings2pBtn", "click", () => loadCSV("ratings_2p.csv"));
+    safeAddListener("ratings3pBtn", "click", () => loadCSV("ratings_3p.csv"));
+    safeAddListener("ratings4pBtn", "click", () => loadCSV("ratings_4p.csv"));
+
+    // Attach event listeners for export buttons
+    safeAddListener("export-btn", "click", exportCSV);
+    safeAddListener("exportAllBtn", "click", exportAllCSV);
+
+    // Attach event listeners to pagination buttons
+    safeAddListener("prevPageBtn", "click", () => displayPage(currentPage - 1));
+    safeAddListener("pageMinus3", "click", () => displayPage(currentPage - 3));
+    safeAddListener("pageMinus2", "click", () => displayPage(currentPage - 2));
+    safeAddListener("pageMinus1", "click", () => displayPage(currentPage - 1));
+    safeAddListener("jumpToPageBtn", "click", jumpToPage);
+    safeAddListener("pagePlus1", "click", () => displayPage(currentPage + 1));
+    safeAddListener("pagePlus2", "click", () => displayPage(currentPage + 2));
+    safeAddListener("pagePlus3", "click", () => displayPage(currentPage + 3));
+    safeAddListener("nextPageBtn", "click", () => displayPage(currentPage + 1));
+
+    // Attach event listeners for filter buttons
+    safeAddListener("applyFilterBtn", "click", applyColumnFilter);
+    safeAddListener("clearFilterBtn", "click", clearColumnFilter);
+
+    // Attach event listener for search function
+    const searchInput = document.getElementById("search");
+    if (searchInput) {
+        searchInput.addEventListener("input", searchTable);
+    }
+});
+
+// Load the table on page load
 window.onload = async function() {
     rowsPerPage = calculateRowsPerPage();
     await loadCSV();
-
-    // Function to update rows per page dynamically
-    function updateRowsPerPage() {
-        let selectedValue = document.getElementById("rowsPerPageSelect").value;
-        rowsPerPage = selectedValue === "auto" ? calculateRowsPerPage() : parseInt(selectedValue, 10);
-        displayPage(1); // Reload table with new row count
-    }       
-
-    // Ensure the dropdown is inserted into pagination
-    if (!document.getElementById("rowsPerPageSelect")) {
-        document.getElementById("nextPageBtn")?.insertAdjacentHTML("afterend", `
-            <div class="rows-per-page-container">
-                <label for="rowsPerPageSelect">Rows per page:</label>
-                <select id="rowsPerPageSelect">
-                    <option value="auto">Auto</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                    <option value="75">75</option>
-                    <option value="100">100</option>
-                </select>
-            </div>
-        `);
-    }
-
-    // Attach event listener to dropdown changes
-    document.getElementById("rowsPerPageSelect").addEventListener("change", updateRowsPerPage);
 
     // Update on window resize
     window.addEventListener("resize", () => {
@@ -427,3 +532,5 @@ window.onload = async function() {
 
     fetchLastCommitDate(); // Ensure last updated date is fetched
 };
+
+
