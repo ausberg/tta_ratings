@@ -40,7 +40,7 @@ async function loadCSV(filename = "ratings_overall.csv", preservePage = false) {
     sortDirection = {}; // Reset sorting state
 
     try {
-        const response = await fetch(`https://raw.githubusercontent.com/ausberg/tta_ratings_dev/main/ratings/${filename}`);
+        const response = await fetch(`https://raw.githubusercontent.com/ausberg/tta_ratings/main/ratings/${filename}`);
         if (!response.ok) throw new Error(`Failed to load ${filename}, status: ${response.status}`);
 
         const data = await response.text();
@@ -117,7 +117,7 @@ function formatColumn(value, index) {
 
 async function fetchLastCommitDate() {
     try {
-        const response = await fetch("https://api.github.com/repos/ausberg/tta_ratings_dev/commits/main");
+        const response = await fetch("https://api.github.com/repos/ausberg/tta_ratings/commits/main");
         const data = await response.json();
         
         // Convert UTC date to local timezone
@@ -486,19 +486,10 @@ function updatePagination(page) {
     // Clear existing pagination content
     paginationDiv.innerHTML = "";
 
-    // Set fixed button widths to prevent shifting
-    const buttonWidth = "50px"; // For number buttons
-    const navButtonWidth = "80px"; // For "Previous" and "Next" buttons
+    // Set fixed button width for consistency
+    const buttonWidth = "50px";
 
-    // Create Previous button
-    let prevBtn = document.createElement("button");
-    prevBtn.textContent = "Previous";
-    prevBtn.style.width = navButtonWidth;
-    prevBtn.disabled = page === 1;
-    prevBtn.addEventListener("click", () => displayPage(page - 1));
-    paginationDiv.appendChild(prevBtn);
-
-    // Show up to 3 pages before current (only if valid)
+    // Show up to 3 pages before current (if valid)
     let startPage = Math.max(1, page - 3);
     let endPage = Math.min(totalPages, page + 3);
 
@@ -514,14 +505,6 @@ function updatePagination(page) {
         }
         paginationDiv.appendChild(pageBtn);
     }
-
-    // Create Next button
-    let nextBtn = document.createElement("button");
-    nextBtn.textContent = "Next";
-    nextBtn.style.width = navButtonWidth;
-    nextBtn.disabled = page === totalPages;
-    nextBtn.addEventListener("click", () => displayPage(page + 1));
-    paginationDiv.appendChild(nextBtn);
 
     // Jump-to-Page input
     let pageInput = document.createElement("input");
@@ -584,7 +567,7 @@ function exportCSV() {
     }
     lastDownloadTime = now; 
 
-    let csvURL = `https://raw.githubusercontent.com/ausberg/tta_ratings_dev/main/ratings/${currentDataset}`;
+    let csvURL = `https://raw.githubusercontent.com/ausberg/tta_ratings/main/ratings/${currentDataset}`;
 
     fetch(csvURL)
         .then(response => response.blob()) // Convert response to Blob
@@ -613,7 +596,7 @@ function exportAllCSV() {
 
     filenames.forEach((filename, index) => {
         setTimeout(() => {
-            let csvURL = `https://raw.githubusercontent.com/ausberg/tta_ratings_dev/main/ratings/${filename}`;
+            let csvURL = `https://raw.githubusercontent.com/ausberg/tta_ratings/main/ratings/${filename}`;
 
             fetch(csvURL)
                 .then(response => response.blob()) // Convert response to Blob
