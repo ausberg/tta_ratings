@@ -23,4 +23,4 @@ This document lists all the tournaments included in the ratings system.
 
 ---
 
-For more details, visit the [GitHub repository](https://github.com/ausberg/tta_ratings_dev).
+For more details, visit the [GitHub repository](https://github.com/ausberg/tta_ratings).
