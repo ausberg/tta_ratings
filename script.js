@@ -40,7 +40,7 @@ async function loadCSV(filename = "ratings_overall.csv", preservePage = false) {
     sortDirection = {}; // Reset sorting state
 
     try {
-        const response = await fetch(`https://raw.githubusercontent.com/ausberg/tta_ratings/main/ratings/${filename}`);
+        const response = await fetch(`https://raw.githubusercontent.com/ausberg/tta_ratings_dev/main/ratings/${filename}`);
         if (!response.ok) throw new Error(`Failed to load ${filename}, status: ${response.status}`);
 
         const data = await response.text();
@@ -120,7 +120,7 @@ function formatColumn(value, index) {
 
 async function fetchLastCommitDate() {
     try {
-        const response = await fetch("https://api.github.com/repos/ausberg/tta_ratings/commits/main");
+        const response = await fetch("https://api.github.com/repos/ausberg/tta_ratings_dev/commits/main");
         const data = await response.json();
         
         // Convert UTC date to local timezone
@@ -591,7 +591,7 @@ function exportCSV() {
     }
     lastDownloadTime = now; 
 
-    let csvURL = `https://raw.githubusercontent.com/ausberg/tta_ratings/main/ratings/${currentDataset}`;
+    let csvURL = `https://raw.githubusercontent.com/ausberg/tta_ratings_dev/main/ratings/${currentDataset}`;
 
     fetch(csvURL)
         .then(response => response.blob()) // Convert response to Blob
@@ -620,7 +620,7 @@ function exportAllCSV() {
 
     filenames.forEach((filename, index) => {
         setTimeout(() => {
-            let csvURL = `https://raw.githubusercontent.com/ausberg/tta_ratings/main/ratings/${filename}`;
+            let csvURL = `https://raw.githubusercontent.com/ausberg/tta_ratings_dev/main/ratings/${filename}`;
 
             fetch(csvURL)
                 .then(response => response.blob()) // Convert response to Blob
@@ -640,22 +640,31 @@ function exportAllCSV() {
 // Searches the table for rows that match the input query
 function searchTable() {
     searchQuery = document.getElementById("search").value.trim(); // Store the search term
-    // console.log("Search Query:", searchQuery);
 
     if (!searchQuery) {
-        console.log("Empty search, resetting filters.");
         applyAllFilters();  // Ensure filters still apply
         displayPage(1);
         return;
     }
 
-    let searchNames = searchQuery.split(",").map(name => name.trim().toLowerCase());
+    let searchNames = searchQuery.split(",").map(name => name.trim());
 
-    filteredRows = allRows.filter(row =>
-        typeof row[3] === "string" && searchNames.some(name => row[3].toLowerCase().includes(name))
-    );
+    filteredRows = allRows.filter(row => {
+        if (typeof row[3] !== "string") return false;
+        let playerName = row[3];
 
-    // console.log("Filtered Rows:", filteredRows.length);
+        return searchNames.some(name => {
+            // Check for both single ('name') and double ("name") quotes
+            if ((name.startsWith('"') && name.endsWith('"')) || (name.startsWith("'") && name.endsWith("'"))) {
+                // Exact match (remove quotes)
+                return playerName.toLowerCase() === name.slice(1, -1).toLowerCase();
+            } else {
+                // Partial match
+                return playerName.toLowerCase().includes(name.toLowerCase());
+            }
+        });
+    });
+
     displayPage(1);
 }
 
