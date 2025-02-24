@@ -1,6 +1,5 @@
 let currentPage = 1;
 let allRows = [];
-const highlightColumns = [1, 4, 6, 8, 18];
 let sortDirection = {};
 let filteredRows = [];
 let rowsPerPage = calculateRowsPerPage();
@@ -21,7 +20,7 @@ function calculateRowsPerPage() {
     const rowHeight = 30; // Approximate row height in pixels
     const availableHeight = windowHeight - headerHeight;
 
-    return Math.max(10, Math.floor(availableHeight / rowHeight) - 2);
+    return Math.max(10, Math.floor(availableHeight / rowHeight) - 5);
 }
 
 async function loadCSV(filename = "ratings_overall.csv", preservePage = false) {
@@ -46,29 +45,38 @@ async function loadCSV(filename = "ratings_overall.csv", preservePage = false) {
         const data = await response.text();
     
         let rawRows = data.trim().split("\n").slice(1).map(row => {
-            let columns = row.split(/,|;/).map(value => isNaN(value) ? value : parseFloat(value)); // Convert numbers correctly
+            let columns = row.split(/,|;/).map(value => isNaN(value) ? value.trim() : parseFloat(value)); // Convert numbers correctly
+            
+            // Ensure country code is uppercase and valid
+            let countryCode = columns[3] && columns[3] !== "-" ? columns[3].toUpperCase() : "";
+            let flagImg = countryCode 
+                ? `<img src="https://raw.githubusercontent.com/yammadev/flag-icons/master/png/${countryCode}.png" 
+                        alt="${countryCode}" title="${countryCode}" width="20" height="15" 
+                        onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<span title=\'Unknown\'>🌍</span>';">`
+                : `<span title='Unknown'>🌍</span>`; // Text fallback for missing country codes with tooltip
         
             return [
                 columns[0],  // Rank
                 columns[1],  // Rank Δ
-                columns[20], // Title
+                columns[21], // Title
                 formatPlayerName(columns[2]),  // Player name with trophy
-                parseFloat(columns[3]).toFixed(0),  // C Rating
-                parseFloat(columns[4]).toFixed(1),  // C R Δ
-                parseFloat(columns[5]).toFixed(0),  // Rating
-                parseFloat(columns[6]).toFixed(1),  // E R Δ
-                parseFloat(columns[7]).toFixed(1),  // RD
-                parseFloat(columns[9]).toFixed(0),  // Opps
-                parseFloat(columns[10]).toFixed(0),  // Opps Δ
-                parseFloat(columns[11]).toFixed(0),  // Ws
-                parseFloat(columns[12]).toFixed(0),  // Ws Δ
-                parseFloat(columns[13]).toFixed(0),  // Ls
-                parseFloat(columns[14]).toFixed(0),  // Ls Δ
-                parseFloat(columns[15]).toFixed(0),  // Ds
-                parseFloat(columns[17]).toFixed(1),  // W%
-                parseFloat(columns[18]).toFixed(2)   // W% Δ
+                flagImg,  // Country (Flag icon with proper fallback)
+                parseFloat(columns[4]).toFixed(0),  // C Rating
+                parseFloat(columns[5]).toFixed(1),  // C R Δ
+                parseFloat(columns[6]).toFixed(0),  // Rating
+                parseFloat(columns[7]).toFixed(1),  // E R Δ
+                parseFloat(columns[8]).toFixed(1),  // RD
+                parseFloat(columns[10]).toFixed(0),  // Opps
+                parseFloat(columns[11]).toFixed(0),  // Opps Δ
+                parseFloat(columns[12]).toFixed(0),  // Ws
+                parseFloat(columns[13]).toFixed(0),  // Ws Δ
+                parseFloat(columns[14]).toFixed(0),  // Ls
+                parseFloat(columns[15]).toFixed(0),  // Ls Δ
+                parseFloat(columns[16]).toFixed(0),  // Ds
+                parseFloat(columns[18]).toFixed(1),  // W%
+                parseFloat(columns[19]).toFixed(2)   // W% Δ
             ];
-        }).filter(columns => columns.length === 18);
+        }).filter(columns => columns.length === 19);                     
     
         allRows = rawRows; // Store processed rows
     
@@ -103,12 +111,12 @@ async function loadCSV(filename = "ratings_overall.csv", preservePage = false) {
 // Ensure the highlight formatting applies correctly
 function formatColumn(value, index) {
     // Columns where highlight formatting applies
-    const highlightColumns = [1, 5, 7, 10, 12, 14, 17]; // Adjust as needed
+    const highlightColumns = [1, 6, 8, 11, 13, 15, 18]; // Adjust as needed
 
     let num = parseFloat(value);
 
     // Special case: Column 11 should be red **only if the value is greater than 0**
-    if (index === 14 && !isNaN(num) && num > 0) {
+    if (index === 15 && !isNaN(num) && num > 0) {
         return `<td class="red">+${num}</td>`;
     }
 
