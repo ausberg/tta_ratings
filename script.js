@@ -40,7 +40,7 @@ async function loadCSV(filename = "ratings_overall.csv", preservePage = false) {
     sortDirection = {}; // Reset sorting state
 
     try {
-        const response = await fetch(`https://raw.githubusercontent.com/ausberg/tta_ratings_dev/main/ratings/${filename}`);
+        const response = await fetch(`https://raw.githubusercontent.com/ausberg/tta_ratings/main/ratings/${filename}`);
         if (!response.ok) throw new Error(`Failed to load ${filename}, status: ${response.status}`);
 
         const data = await response.text();
@@ -53,7 +53,7 @@ async function loadCSV(filename = "ratings_overall.csv", preservePage = false) {
                 columns[0],  // Rank
                 columns[1],  // Rank Δ
                 columns[20], // Title
-                columns[2],  // Player
+                formatPlayerName(columns[2]),  // Player name with trophy
                 parseFloat(columns[3]).toFixed(0),  // C Rating
                 parseFloat(columns[4]).toFixed(1),  // C R Δ
                 parseFloat(columns[5]).toFixed(0),  // Rating
@@ -85,7 +85,7 @@ async function loadCSV(filename = "ratings_overall.csv", preservePage = false) {
             searchInput.value = searchQuery; // Restore previous search term
             applyStoredFilters(); // Ensure column filters are applied first
             searchTable(); // Apply search on top of filtered data
-        }, 300);
+        }, 300);                         
 
     } catch (error) {
         console.error("Error loading CSV:", error);
@@ -120,7 +120,7 @@ function formatColumn(value, index) {
 
 async function fetchLastCommitDate() {
     try {
-        const response = await fetch("https://api.github.com/repos/ausberg/tta_ratings_dev/commits/main");
+        const response = await fetch("https://api.github.com/repos/ausberg/tta_ratings/commits/main");
         const data = await response.json();
         
         // Convert UTC date to local timezone
@@ -138,6 +138,20 @@ async function fetchLastCommitDate() {
     }
 }
 fetchLastCommitDate();
+
+function formatPlayerName(player) {
+    let icon = '';
+
+    if (player === "Martin_Pecheur") {
+        icon = '<img class="trophy gold-trophy" src="images/gold_trophy.png" alt="Gold Trophy">';
+    } else if (player === "pv4") {
+        icon = '<img class="trophy silver-trophy" src="images/silver_trophy.png" alt="Silver Trophy">';
+    } else if (player === "Weidenbaum") {
+        icon = '<img class="trophy bronze-trophy" src="images/bronze_trophy.png" alt="Bronze Trophy">';
+    }
+
+    return `${icon} ${player}`;
+}
 
 function addSorting() {
     document.querySelectorAll("th").forEach((th, index) => {
@@ -591,7 +605,7 @@ function exportCSV() {
     }
     lastDownloadTime = now; 
 
-    let csvURL = `https://raw.githubusercontent.com/ausberg/tta_ratings_dev/main/ratings/${currentDataset}`;
+    let csvURL = `https://raw.githubusercontent.com/ausberg/tta_ratings/main/ratings/${currentDataset}`;
 
     fetch(csvURL)
         .then(response => response.blob()) // Convert response to Blob
@@ -620,7 +634,7 @@ function exportAllCSV() {
 
     filenames.forEach((filename, index) => {
         setTimeout(() => {
-            let csvURL = `https://raw.githubusercontent.com/ausberg/tta_ratings_dev/main/ratings/${filename}`;
+            let csvURL = `https://raw.githubusercontent.com/ausberg/tta_ratings/main/ratings/${filename}`;
 
             fetch(csvURL)
                 .then(response => response.blob()) // Convert response to Blob
