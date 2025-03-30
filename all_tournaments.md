@@ -12,7 +12,7 @@ This document lists all the tournaments included in the ratings system.
 - **Nations League** from Season 2 up to Season 10
 - **Premier League** up to Season 4
 - **Royal League** up to Season 3
-- **Slow Burn** up to Season 6
+- **Slow Burn** up to Season 7
 - **Sodium Ladder** up to Season 3
 - **Transcontinental Ladder** up to Round 122
 - **Wimbledon 2023**
