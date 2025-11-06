@@ -5,7 +5,7 @@ This document lists all the tournaments included in the ratings system.
 ## Tournaments
 
 - **Duel Curve** from Season 2 up to Season 11
-- **Eiffel Tower** up to Season 2
+- **Eiffel Tower** up to all games finished in Season 3 prior to September 1st 
 - **French Open 2025** up to Stage 2
 - **Intermezzo Championship** up to Season 27 (CGE 22)
 - **International Championship** up to Season 31 (CGE 22)
