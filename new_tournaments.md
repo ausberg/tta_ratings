@@ -4,27 +4,24 @@ The following tournaments have been fully completed since the beginning of the c
 
 ## Newly completed Tournaments
 
-- **French Open 2025** Stage 5 (even games)
-- **French Open 2025** Stage 6 (odd games)
-- **Intermezzo Championship** Season 30 (CGE 25)
-- **International Championship** Season 33 (CGE 24)
-- **Mercurial Ladder** Season 32
-- **Mercurial Ladder** Season 33
-- **Mercurial Ladder** Season 34
-- **Royal League** Season 8
-- **Slow Burn** Season 13
-- **Slow Burn** Season 14
-- **Sodium Ladder** Season 12
-- **Sodium Ladder** Season 13
-- **Survivors Cup 2026** Stage 3
-- **Survivors Cup 2026** Stage 4
-- **Survivors Cup 2026** Stage 5
-- **Survivors Cup 2026** Stage 6
-- **Transcontinental Ladder** Round 135 (CGE 81)
-- **Transcontinental Ladder** Round 136 (CGE 82)
-- **Transcontinental Ladder** Round 137 (CGE 83)
-- **World Championship 2026** Stage 3
-- **World Championship 2026** Stage 4
+- **French Open 2026** Stage 1 (even games)
+- **French Open 2026** Stage 1 (odd games)
+- **International Championship** Season 34 (CGE 25)
+- **Mercurial Ladder** Season 35
+- **Mercurial Ladder** Season 36
+- **Royal League** Season 9
+- **Slow Burn** Season 15
+- **Sodium Ladder** Season 14
+- **Sodium Ladder** Season 15
+- **Survivors Cup 2026** Stage 7
+- **Survivors Cup 2026** Stage 8
+- **Survivors Cup 2026** Stage 9
+- **Survivors Cup 2026** Stage 10
+- **Survivors Cup 2026** Stage 11
+- **Transcontinental Ladder** Round 138 (CGE 84)
+- **Transcontinental Ladder** Round 139 (CGE 85)
+- **World Championship 2026** Stage 5
+- **World Championship 2026** Stage 6
 
 ---
 
